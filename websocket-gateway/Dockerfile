@@ -18,14 +18,11 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build TypeScript  
+# Build TypeScript
 RUN npm run build
 
 # Remove dev dependencies to reduce image size
 RUN npm prune --omit=dev
-
-# Build TypeScript
-RUN npm run build
 
 # Change ownership to nodejs user
 RUN chown -R nextjs:nodejs /app
