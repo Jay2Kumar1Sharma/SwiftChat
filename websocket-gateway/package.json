@@ -1,0 +1,41 @@
+{
+  "name": "websocket-gateway",
+  "version": "1.0.0",
+  "description": "WebSocket Gateway for Real-time Chat",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "postinstall": "npm run build",
+    "prod": "NODE_ENV=production npm start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "echo \"Linting not configured\""
+  },
+  "keywords": [
+    "websocket",
+    "socket.io",
+    "real-time",
+    "chat",
+    "typescript"
+  ],
+  "author": "Microsoft SWE Intern",
+  "license": "MIT",
+  "dependencies": {
+    "socket.io": "^4.7.4",
+    "redis": "^4.6.10",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/cors": "^2.8.17",
+    "typescript": "^5.3.3",
+    "ts-node-dev": "^2.0.0",
+    "rimraf": "^5.0.5"
+  }
+}

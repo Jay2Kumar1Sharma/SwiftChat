@@ -1,0 +1,202 @@
+# Render.com deployment configuration
+services:
+  # Frontend - Static Site
+  - type: web
+    name: chat-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/build
+    pullRequestPreviewsEnabled: false
+    buildFilter:
+      paths:
+      - frontend/**
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://chat-api-gateway.onrender.com
+      - key: REACT_APP_WS_URL
+        value: wss://chat-websocket.onrender.com
+      - key: REACT_APP_NODE_ENV
+        value: production
+
+  # API Gateway
+  - type: web
+    name: chat-api-gateway
+    env: node
+    plan: starter
+    buildCommand: cd api-gateway && npm install && npm run build
+    startCommand: cd api-gateway && npm start
+    healthCheckPath: /health
+    pullRequestPreviewsEnabled: false
+    buildFilter:
+      paths:
+      - api-gateway/**
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: AUTH_SERVICE_URL
+        value: https://chat-auth-service.onrender.com
+      - key: CHAT_SERVICE_URL
+        value: https://chat-service.onrender.com
+      - key: NOTIFICATION_SERVICE_URL
+        value: https://chat-notification.onrender.com
+      - key: WEBSOCKET_SERVICE_URL
+        value: https://chat-websocket.onrender.com
+      - key: FRONTEND_URL
+        value: https://chat-frontend.onrender.com
+      - key: JWT_SECRET
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+
+  # Auth Service
+  - type: web
+    name: chat-auth-service
+    env: node
+    plan: starter
+    buildCommand: cd auth-service && npm install && npm run build
+    startCommand: cd auth-service && npm start
+    healthCheckPath: /health
+    pullRequestPreviewsEnabled: false
+    buildFilter:
+      paths:
+      - auth-service/**
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: BCRYPT_ROUNDS
+        value: 12
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chat-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: chat-redis
+          property: connectionString
+      - key: FRONTEND_URL
+        value: https://chat-frontend.onrender.com
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
+
+  # WebSocket Gateway
+  - type: web
+    name: chat-websocket
+    env: node
+    plan: starter
+    buildCommand: cd websocket-gateway && npm install && npm run build
+    startCommand: cd websocket-gateway && npm start
+    healthCheckPath: /health
+    pullRequestPreviewsEnabled: false
+    buildFilter:
+      paths:
+      - websocket-gateway/**
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AUTH_SERVICE_URL
+        value: https://chat-auth-service.onrender.com
+      - key: FRONTEND_URL
+        value: https://chat-frontend.onrender.com
+      - key: REDIS_URL
+        fromDatabase:
+          name: chat-redis
+          property: connectionString
+      - key: LOG_LEVEL
+        value: info
+
+  # Chat Service (for future implementation)
+  - type: web
+    name: chat-service
+    env: node
+    plan: starter
+    buildCommand: cd chat-service && npm install && npm run build
+    startCommand: cd chat-service && npm start
+    healthCheckPath: /health
+    pullRequestPreviewsEnabled: false
+    buildFilter:
+      paths:
+      - chat-service/**
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chat-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: chat-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AUTH_SERVICE_URL
+        value: https://chat-auth-service.onrender.com
+      - key: LOG_LEVEL
+        value: info
+
+  # Notification Service (for future implementation)
+  - type: web
+    name: chat-notification
+    env: node
+    plan: starter
+    buildCommand: cd notification-service && npm install && npm run build
+    startCommand: cd notification-service && npm start
+    healthCheckPath: /health
+    pullRequestPreviewsEnabled: false
+    buildFilter:
+      paths:
+      - notification-service/**
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chat-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: chat-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AUTH_SERVICE_URL
+        value: https://chat-auth-service.onrender.com
+      - key: LOG_LEVEL
+        value: info
+
+databases:
+  # PostgreSQL Database
+  - name: chat-postgres
+    databaseName: chat_db
+    user: chat_user
+    plan: free
+
+  # Redis Database  
+  - name: chat-redis
+    plan: free

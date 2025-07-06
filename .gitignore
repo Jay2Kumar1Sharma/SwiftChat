@@ -1,0 +1,309 @@
+# Chat Application - Git Ignore File
+
+# ===============================================
+# Dependencies
+# ===============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===============================================
+# Production Builds
+# ===============================================
+# Frontend React build
+frontend/build/
+frontend/dist/
+
+# Backend service builds
+auth-service/dist/
+api-gateway/dist/
+websocket-gateway/dist/
+chat-service/dist/
+notification-service/dist/
+
+# Build artifacts
+*.tgz
+*.tar.gz
+
+# ===============================================
+# Environment Variables & Secrets
+# ===============================================
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backup environment files
+.env.backup
+.env.example.local
+
+# Secret files
+secrets/
+.secrets
+*.key
+*.pem
+*.p12
+*.pfx
+
+# ===============================================
+# Logs
+# ===============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime logs
+combined.log
+error.log
+access.log
+
+# ===============================================
+# IDE & Editor Files
+# ===============================================
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ===============================================
+# Operating System Files
+# ===============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ===============================================
+# Database Files
+# ===============================================
+# SQLite
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+
+# Database dumps
+*.sql.gz
+*.dump
+backup.sql
+
+# Redis dumps
+dump.rdb
+
+# ===============================================
+# Testing & Coverage
+# ===============================================
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Jest
+jest-coverage/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+
+# ===============================================
+# Cache & Temporary Files
+# ===============================================
+# npm cache
+.npm/
+
+# yarn cache
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Node cache
+.cache/
+.parcel-cache/
+
+# Next.js cache
+.next/
+
+# Temporary folders
+tmp/
+temp/
+.tmp/
+
+# ===============================================
+# Docker
+# ===============================================
+# Docker volumes
+docker-data/
+postgres-data/
+redis-data/
+
+# Docker override files
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ===============================================
+# Deployment & Cloud
+# ===============================================
+# Deployment artifacts
+deployment/
+.deployment
+
+# Heroku
+.env.production
+.env.staging
+
+# Vercel
+.vercel/
+
+# Netlify
+.netlify/
+
+# ===============================================
+# TypeScript
+# ===============================================
+# TypeScript declaration maps
+*.d.ts.map
+
+# TypeScript build info
+*.tsbuildinfo
+
+# ===============================================
+# Package Manager Files
+# ===============================================
+# Lock files (choose one based on your preference)
+# package-lock.json  # Uncomment if using yarn
+# yarn.lock          # Uncomment if using npm
+
+# pnpm
+pnpm-lock.yaml
+
+# ===============================================
+# Documentation & Scripts (Exclude All)
+# ===============================================
+# Exclude ALL markdown files
+*.md
+
+# Exclude ALL batch files  
+*.bat
+
+# ===============================================
+# Miscellaneous
+# ===============================================
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Archive files
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+
+# Generated files
+*.generated.*
+
+# Local configuration
+local.json
+config.local.js
+
+# ===============================================
+# Chat Application Specific
+# ===============================================
+# Uploaded files
+uploads/
+files/
+attachments/
+
+# Chat logs
+chat-logs/
+message-history/
+
+# User avatars
+avatars/
+profile-pics/
+
+# Export files
+exports/
+*.csv
+*.xlsx
+
+# ===============================================
+# Security & Certificates
+# ===============================================
+# SSL certificates
+*.crt
+*.cert
+*.ca-bundle
+
+# Private keys
+private/
+*.private
+
+# GPG keys
+*.gpg
+*.asc
+
+# ===============================================
+# Monitoring & Analytics
+# ===============================================
+# Performance monitoring
+.lighthouseci/
+
+# Analytics data
+analytics/
+metrics/
+
+# Error tracking
+sentry.properties

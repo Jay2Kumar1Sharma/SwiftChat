@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: chat-postgres-dev
+    environment:
+      POSTGRES_DB: chat_db
+      POSTGRES_USER: chat_user
+      POSTGRES_PASSWORD: chat_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chat_user -d chat_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: chat-redis-dev
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Development Tools
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: chat-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@chatapp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: chat-redis-commander-dev
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  default:
+    name: chat-network
