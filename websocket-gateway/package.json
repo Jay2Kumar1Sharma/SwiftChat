@@ -9,7 +9,6 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
-    "postinstall": "npm run build",
     "prod": "NODE_ENV=production npm start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "echo \"Linting not configured\""

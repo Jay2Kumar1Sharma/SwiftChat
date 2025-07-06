@@ -5,13 +5,16 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install
 
 # Copy source code
 COPY . .
 
 # Build TypeScript
 RUN npm run build
+
+# Remove dev dependencies to reduce image size
+RUN npm prune --omit=dev
 
 # Expose port
 EXPOSE 4003

@@ -13,10 +13,16 @@ RUN adduser -S nextjs -u 1001
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --omit=dev && npm cache clean --force
+RUN npm install
 
 # Copy source code
 COPY . .
+
+# Build TypeScript  
+RUN npm run build
+
+# Remove dev dependencies to reduce image size
+RUN npm prune --omit=dev
 
 # Build TypeScript
 RUN npm run build
