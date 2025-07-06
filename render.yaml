@@ -4,9 +4,10 @@ services:
   - type: web
     name: chat-frontend
     env: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/build
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
     pullRequestPreviewsEnabled: false
+    rootDir: frontend
     buildFilter:
       paths:
       - frontend/**
