@@ -80,10 +80,10 @@ export const Chat: React.FC = () => {
               <div className="welcome-icon">
                 💬
               </div>
-              <h2 className="welcome-title">WhatsApp Web</h2>
+              <h2 className="welcome-title">SwiftChat Web</h2>
               <p className="welcome-subtitle">
-                Send and receive messages without keeping your phone online.<br />
-                Use WhatsApp on up to 4 linked devices and 1 phone at the same time.
+                Send and receive messages instantly with your team.<br />
+                Connect and collaborate from anywhere, anytime.
               </p>
             </div>
           )}

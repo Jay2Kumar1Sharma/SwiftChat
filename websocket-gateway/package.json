@@ -19,7 +19,7 @@
     "chat",
     "typescript"
   ],
-  "author": "Microsoft SWE Intern",
+  "author": "Software Engineering Professional",
   "license": "MIT",
   "dependencies": {
     "socket.io": "^4.7.4",

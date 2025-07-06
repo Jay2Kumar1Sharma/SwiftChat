@@ -57,7 +57,7 @@
     "redis",
     "docker"
   ],
-  "author": "Microsoft Software Engineering Intern",
+  "author": "Software Engineering Professional",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2",

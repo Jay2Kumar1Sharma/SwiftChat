@@ -58,7 +58,7 @@ export const Login: React.FC = () => {
           <div className="auth-logo">
             💬
           </div>
-          <h1 className="auth-title">Welcome to WhatsApp</h1>
+          <h1 className="auth-title">Welcome to SwiftChat</h1>
           <p className="auth-subtitle">
             {isDemoMode ? 'Demo Mode - No registration required' : 'Sign in to your account'}
           </p>
@@ -132,7 +132,7 @@ export const Login: React.FC = () => {
               disabled={isLoading}
               className="btn-auth"
               style={{ 
-                background: 'var(--whatsapp-blue)', 
+                background: 'var(--primary-blue)', 
                 marginBottom: '16px',
                 order: -1 
               }}
