@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
-import { Chat } from './components/Chat';
+import Chat from './components/Chat';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import './App.css';
 

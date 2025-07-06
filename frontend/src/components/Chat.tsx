@@ -92,3 +92,6 @@ export const Chat: React.FC = () => {
     </div>
   );
 };
+
+// Default export for better compatibility
+export default Chat;
