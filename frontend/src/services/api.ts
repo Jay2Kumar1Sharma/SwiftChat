@@ -111,107 +111,80 @@ const apiClient = new APIClient();
 // Auth API
 export const authAPI = {
   login: async (credentials: LoginRequest): Promise<AuthResponse> => {
-    // Force demo mode if API URL is localhost and we can't reach it
-    const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost');
-    
-    if (forceDemo) {
-      console.log('🎮 Demo login attempt:', { email: credentials.email, passwordLength: credentials.password?.length });
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Validate credentials against demo user database
-      if (!credentials.email || !credentials.password) {
-        throw new Error('Please enter both email and password');
-      }
-      
-      const demoUser = DEMO_USERS.find(user => 
-        user.email.toLowerCase() === credentials.email.toLowerCase() && 
-        user.password === credentials.password
-      );
-      
-      if (demoUser) {
-        console.log('🎮 Demo login successful for:', demoUser.username);
-        return {
-          user: {
-            id: demoUser.id,
-            username: demoUser.username,
-            email: demoUser.email,
-            isOnline: true,
-          },
-          token: `demo-jwt-token-${demoUser.id}`,
-          refreshToken: `demo-refresh-token-${demoUser.id}`,
-        };
-      } else {
-        console.log('🎮 Demo login failed: Invalid credentials');
-        throw new Error('Invalid email or password. Try: demo@example.com / demo123');
-      }
-    }
-    
-    // Try real API call, but fallback to demo if it fails
+    // Try real API call first, regardless of demo mode
     try {
       console.log('🌐 Attempting real API login...');
       return await apiClient.post('/api/auth/login', credentials);
     } catch (error) {
-      console.warn('🌐 Real API failed, falling back to demo mode:', error);
+      console.warn('🌐 Real API failed, trying demo mode:', error);
       
-      // Fallback to demo validation
-      if (!credentials.email || !credentials.password) {
-        throw new Error('Please enter both email and password');
-      }
+      // If real API fails, try demo mode
+      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost');
       
-      const demoUser = DEMO_USERS.find(user => 
-        user.email.toLowerCase() === credentials.email.toLowerCase() && 
-        user.password === credentials.password
-      );
-      
-      if (demoUser) {
-        console.log('🎮 Fallback demo login successful for:', demoUser.username);
-        return {
-          user: {
-            id: demoUser.id,
-            username: demoUser.username,
-            email: demoUser.email,
-            isOnline: true,
-          },
-          token: `demo-jwt-token-${demoUser.id}`,
-          refreshToken: `demo-refresh-token-${demoUser.id}`,
-        };
+      if (forceDemo) {
+        console.log('🎮 Demo login attempt:', { email: credentials.email, passwordLength: credentials.password?.length });
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Validate credentials against demo user database
+        if (!credentials.email || !credentials.password) {
+          throw new Error('Please enter both email and password');
+        }
+        
+        const demoUser = DEMO_USERS.find(user => 
+          user.email.toLowerCase() === credentials.email.toLowerCase() && 
+          user.password === credentials.password
+        );
+        
+        if (demoUser) {
+          console.log('🎮 Demo login successful for:', demoUser.username);
+          return {
+            user: {
+              id: demoUser.id,
+              username: demoUser.username,
+              email: demoUser.email,
+              isOnline: true,
+            },
+            token: `demo-jwt-token-${demoUser.id}`,
+            refreshToken: `demo-refresh-token-${demoUser.id}`,
+          };
+        } else {
+          throw new Error('Invalid email or password. Try: demo@example.com / demo123');
+        }
       } else {
-        throw new Error('Invalid email or password. Try: demo@example.com / demo123');
+        // If not in demo mode and real API failed, throw the original error
+        throw error;
       }
     }
   },
   
   register: async (userData: RegisterRequest): Promise<AuthResponse> => {
-    const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost');
-    
-    if (forceDemo) {
-      console.log('🎮 Demo register:', userData);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return {
-        ...DEMO_AUTH_RESPONSE,
-        user: {
-          ...DEMO_USER,
-          username: userData.username,
-          email: userData.email,
-        }
-      };
-    }
-    
+    // Try real API call first, regardless of demo mode
     try {
       console.log('🌐 Attempting real API register...');
       return await apiClient.post('/api/auth/register', userData);
     } catch (error) {
-      console.warn('🌐 Real API failed, falling back to demo mode:', error);
-      return {
-        ...DEMO_AUTH_RESPONSE,
-        user: {
-          ...DEMO_USER,
-          username: userData.username,
-          email: userData.email,
-        }
-      };
+      console.warn('🌐 Real API failed, trying demo mode:', error);
+      
+      // If real API fails, try demo mode
+      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost');
+      
+      if (forceDemo) {
+        console.log('🎮 Demo register:', userData);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return {
+          ...DEMO_AUTH_RESPONSE,
+          user: {
+            ...DEMO_USER,
+            username: userData.username,
+            email: userData.email,
+          }
+        };
+      } else {
+        // If not in demo mode and real API failed, throw the original error
+        throw error;
+      }
     }
   },
   
