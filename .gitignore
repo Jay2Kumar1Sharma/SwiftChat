@@ -230,9 +230,12 @@ pnpm-lock.yaml
 # ===============================================
 # Documentation & Scripts (Exclude Most)
 # ===============================================
-# Exclude all markdown documentation files
+# Allow only README.md first
+!README.md
+
+# Then exclude all other markdown documentation files
 *.md
-# Allow only README.md
+# Re-allow README.md to ensure it's not excluded
 !README.md
 
 # Exclude all batch files
