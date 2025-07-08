@@ -110,7 +110,7 @@ export class UserRepository implements IUserRepository {
     
     try {
       const result = await pool.query(query);
-      return result.rows.map(row => this.mapRowToUser(row, false));
+      return result.rows.map((row: any) => this.mapRowToUser(row, false));
     } catch (error) {
       console.error('Error getting all users:', error);
       throw error;
