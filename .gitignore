@@ -232,13 +232,14 @@ pnpm-lock.yaml
 # ===============================================
 # Exclude all markdown documentation files
 *.md
+# Allow only README.md
+!README.md
 
 # Exclude all batch files
 *.bat
 
 # BUT INCLUDE only essential files
 !start-all.bat
-!README.md
 
 # ===============================================
 # Miscellaneous
