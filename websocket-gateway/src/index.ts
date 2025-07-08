@@ -64,7 +64,11 @@ class WebSocketGateway {
     
     this.io = new Server(this.httpServer, {
       cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        origin: [
+          "http://localhost:3000",
+          "https://swiftchat-frontend.onrender.com",
+          process.env.FRONTEND_URL || "http://localhost:3000",
+        ],
         methods: ["GET", "POST"],
         credentials: true
       },
