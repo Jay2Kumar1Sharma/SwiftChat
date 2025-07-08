@@ -8,6 +8,7 @@ import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
 import { errorHandler } from './middleware/errorHandler';
 import { validateEnv } from './utils/validateEnv';
+import { apiLimiter } from './middleware/rateLimiter';
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +30,9 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
 }));
+
+// Rate limiting
+app.use(apiLimiter);
 
 // Logging and parsing
 app.use(morgan('combined'));

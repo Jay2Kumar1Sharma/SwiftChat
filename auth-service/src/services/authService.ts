@@ -1,13 +1,29 @@
 import { userRepository } from '../repositories';
-import { hashPassword, comparePassword } from '../utils/password';
+import { hashPassword, comparePassword, validatePassword, validateUsername, validateEmail } from '../utils/password';
 import { generateTokens, verifyRefreshToken } from '../utils/jwt';
 import { CreateUserRequest, LoginRequest, AuthResponse, User } from '../types';
 import { redis } from '../config/database';
 
 export class AuthService {
   async register(userData: CreateUserRequest): Promise<AuthResponse> {
+    // Validate input data
+    const emailValidation = validateEmail(userData.email);
+    if (!emailValidation.isValid) {
+      throw new Error(`Email validation failed: ${emailValidation.errors.join(', ')}`);
+    }
+
+    const usernameValidation = validateUsername(userData.username);
+    if (!usernameValidation.isValid) {
+      throw new Error(`Username validation failed: ${usernameValidation.errors.join(', ')}`);
+    }
+
+    const passwordValidation = validatePassword(userData.password);
+    if (!passwordValidation.isValid) {
+      throw new Error(`Password validation failed: ${passwordValidation.errors.join(', ')}`);
+    }
+
     // Check if user already exists
-    const existingUser = await userRepository.findByEmail(userData.email);
+    const existingUser = await userRepository.findByEmail(userData.email.toLowerCase());
     if (existingUser) {
       throw new Error('User with this email already exists');
     }
@@ -22,7 +38,8 @@ export class AuthService {
 
     // Create user
     const user = await userRepository.create({
-      ...userData,
+      username: userData.username,
+      email: userData.email.toLowerCase(),
       password: hashedPassword,
     });
 

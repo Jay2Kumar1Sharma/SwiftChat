@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authService } from '../services/authService';
+import { registerLimiter, loginLimiter } from '../middleware/rateLimiter';
 
 const router: Router = Router();
 
@@ -10,16 +11,24 @@ const registerValidation = [
     .isLength({ min: 3, max: 20 })
     .withMessage('Username must be between 3 and 20 characters')
     .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
+    .withMessage('Username can only contain letters, numbers, and underscores')
+    .custom((value) => {
+      if (value.startsWith('_') || value.endsWith('_')) {
+        throw new Error('Username cannot start or end with underscore');
+      }
+      return true;
+    }),
   body('email')
     .isEmail()
     .withMessage('Please provide a valid email address')
-    .normalizeEmail(),
+    .normalizeEmail()
+    .isLength({ max: 254 })
+    .withMessage('Email address is too long'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/)
+    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character'),
 ];
 
 const loginValidation = [
@@ -33,7 +42,7 @@ const loginValidation = [
 ];
 
 // Routes
-router.post('/register', registerValidation, async (req: Request, res: Response): Promise<void> => {
+router.post('/register', registerLimiter, registerValidation, async (req: Request, res: Response): Promise<void> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -45,21 +54,34 @@ router.post('/register', registerValidation, async (req: Request, res: Response)
     }
 
     const { username, email, password } = req.body;
+    
+    // Log registration attempt for monitoring
+    console.log(`📝 Registration attempt: ${email} (${username}) from IP: ${req.ip}`);
+    
     const result = await authService.register({ username, email, password });
 
+    console.log(`✅ Registration successful: ${email} (${username})`);
+    
     res.status(201).json({
       message: 'User registered successfully',
       data: result,
     });
   } catch (error: any) {
-    console.error('Registration error:', error);
+    console.error('❌ Registration error:', error.message);
+    
+    // Don't expose sensitive error details in production
+    const isProduction = process.env.NODE_ENV === 'production';
+    const errorMessage = isProduction && error.message.includes('validation') 
+      ? 'Invalid registration data provided'
+      : error.message;
+    
     res.status(400).json({
-      error: error.message || 'Registration failed',
+      error: errorMessage || 'Registration failed',
     });
   }
 });
 
-router.post('/login', loginValidation, async (req: Request, res: Response): Promise<void> => {
+router.post('/login', loginLimiter, loginValidation, async (req: Request, res: Response): Promise<void> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

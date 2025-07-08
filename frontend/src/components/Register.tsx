@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { toast } from 'react-hot-toast';
+import { PasswordStrength } from './PasswordStrength';
+
+interface ValidationErrors {
+  username?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
 
 export const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -9,24 +17,57 @@ export const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
   const { register } = useAuthStore();
   const navigate = useNavigate();
+
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    // Username validation
+    if (!username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    } else if (username.length > 20) {
+      newErrors.username = 'Username must be no more than 20 characters';
+    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      newErrors.username = 'Username can only contain letters, numbers, and underscores';
+    } else if (username.startsWith('_') || username.endsWith('_')) {
+      newErrors.username = 'Username cannot start or end with underscore';
+    }
+
+    // Email validation
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please provide a valid email address';
+    }
+
+    // Password validation
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
+      newErrors.password = 'Password must contain uppercase, lowercase, number, and special character';
+    }
+
+    // Confirm password validation
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !email || !password || !confirmPassword) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    if (!validateForm()) {
       return;
     }
 
@@ -39,6 +80,28 @@ export const Register: React.FC = () => {
       toast.error((error as Error).message || 'Registration failed');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof ValidationErrors, value: string) => {
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+    
+    switch (field) {
+      case 'username':
+        setUsername(value);
+        break;
+      case 'email':
+        setEmail(value);
+        break;
+      case 'password':
+        setPassword(value);
+        break;
+      case 'confirmPassword':
+        setConfirmPassword(value);
+        break;
     }
   };
 
@@ -60,9 +123,9 @@ export const Register: React.FC = () => {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="sr-only">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
               </label>
               <input
@@ -71,14 +134,20 @@ export const Register: React.FC = () => {
                 type="text"
                 autoComplete="username"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.username ? 'border-red-500' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                placeholder="Enter your username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => handleInputChange('username', e.target.value)}
               />
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+              )}
             </div>
+            
             <div>
-              <label htmlFor="email-address" className="sr-only">
+              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
               <input
@@ -87,14 +156,20 @@ export const Register: React.FC = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                placeholder="Enter your email address"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => handleInputChange('email', e.target.value)}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
+            
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
@@ -103,14 +178,21 @@ export const Register: React.FC = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handleInputChange('password', e.target.value)}
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
+              <PasswordStrength password={password} />
             </div>
+            
             <div>
-              <label htmlFor="confirm-password" className="sr-only">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
                 Confirm Password
               </label>
               <input
@@ -119,11 +201,16 @@ export const Register: React.FC = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm password"
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                placeholder="Confirm your password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
               />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
             </div>
           </div>
 
