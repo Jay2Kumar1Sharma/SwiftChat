@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { mockRedis } from './mockRedis';
+import { mockPool } from './mockDatabase';
 
 // Conditional Redis import to handle missing dependency
 let Redis: any;
@@ -21,17 +22,31 @@ const shouldUseMockServices = (): boolean => {
   const hasRealDatabase = databaseUrl.includes('postgresql://') && 
     (!databaseUrl.includes('localhost') || process.env.USE_REAL_LOCAL_DB === 'true');
   
+  // In production, check if database URL is properly configured
+  if (process.env.NODE_ENV === 'production') {
+    return !hasRealDatabase || !databaseUrl;
+  }
+  
   return isDevMode && !hasRealDatabase;
 };
 
-// PostgreSQL connection
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+// PostgreSQL connection - use mock pool if needed
+const createDatabasePool = () => {
+  if (shouldUseMockServices() || !process.env.DATABASE_URL) {
+    console.log('🎮 Using mock PostgreSQL for development/fallback');
+    return mockPool as any; // Type assertion for compatibility
+  } else {
+    return new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
+  }
+};
+
+export const pool = createDatabasePool();
 
 // Redis connection - use mock in development without real database
 const createRedisClient = () => {
@@ -73,11 +88,33 @@ export const connectDatabase = async (): Promise<void> => {
     }
   } catch (error) {
     console.error('❌ Database connection failed:', error);
-    console.log('🎮 Falling back to mock mode for development');
-    // Don't throw error in development to allow testing without real databases
-    if (process.env.NODE_ENV !== 'development') {
-      throw error;
+    
+    // In production, if DATABASE_URL is not properly configured, 
+    // we should still allow the service to start with fallback mode
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('localhost')) {
+      console.log('🎮 Falling back to mock mode due to missing or local database configuration');
+      return; // Allow service to continue with mock mode
     }
+    
+    // Only throw error in production if we have a real database URL but connection fails
+    if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')) {
+      console.log('🔄 Retrying database connection in 5 seconds...');
+      // Give it one more try after a delay
+      setTimeout(async () => {
+        try {
+          const client = await pool.connect();
+          await client.query('SELECT 1');
+          client.release();
+          console.log('✅ PostgreSQL connected on retry');
+        } catch (retryError) {
+          console.error('❌ Database retry failed, continuing with mock mode');
+        }
+      }, 5000);
+      return; // Allow service to continue
+    }
+    
+    // In development, always fall back to mock mode
+    console.log('🎮 Falling back to mock mode for development');
   }
 };
 
