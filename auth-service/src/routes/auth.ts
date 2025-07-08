@@ -156,4 +156,41 @@ router.post('/logout', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+router.get('/me', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({
+        error: 'Access token required',
+      });
+      return;
+    }
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    try {
+      const { verifyToken } = await import('../utils/jwt');
+      const payload = verifyToken(token);
+      
+      const user = await authService.getProfile(payload.userId);
+      
+      res.json({
+        message: 'Profile retrieved successfully',
+        data: user,
+      });
+    } catch (error) {
+      res.status(401).json({
+        error: 'Invalid or expired token',
+      });
+      return;
+    }
+  } catch (error: any) {
+    console.error('Get me error:', error);
+    res.status(500).json({
+      error: error.message || 'Failed to get user profile',
+    });
+  }
+});
+
 export { router as authRoutes };

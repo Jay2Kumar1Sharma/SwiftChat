@@ -117,6 +117,26 @@ export class UserRepository implements IUserRepository {
     }
   }
 
+  async searchUsers(query: string): Promise<Omit<User, 'password'>[]> {
+    const searchQuery = `
+      SELECT id, username, email, is_online, last_seen, created_at, updated_at
+      FROM users 
+      WHERE 
+        username ILIKE $1 OR 
+        email ILIKE $1
+      ORDER BY username ASC
+      LIMIT 20
+    `;
+    
+    try {
+      const result = await pool.query(searchQuery, [`%${query}%`]);
+      return result.rows.map((row: any) => this.mapRowToUser(row, false));
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw error;
+    }
+  }
+
   private mapRowToUser(row: any, includePassword: boolean = true): User {
     return {
       id: row.id,

@@ -83,8 +83,13 @@ export const connectDatabase = async (): Promise<void> => {
 
     // Test Redis connection (only if it's a real Redis instance)
     if (redis && typeof redis.ping === 'function') {
-      await redis.ping();
-      console.log('✅ Redis connected successfully');
+      try {
+        await redis.ping();
+        console.log('✅ Redis connected successfully');
+      } catch (redisError) {
+        console.warn('⚠️ Redis connection failed, continuing without Redis:', redisError);
+        // Don't throw error - service can continue without Redis
+      }
     }
   } catch (error) {
     console.error('❌ Database connection failed:', error);

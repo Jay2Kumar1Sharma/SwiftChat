@@ -7,4 +7,5 @@ export interface IUserRepository {
   create(userData: CreateUserRequest): Promise<User>;
   updateOnlineStatus(userId: string, isOnline: boolean): Promise<void>;
   getAllUsers(): Promise<Omit<User, 'password'>[]>;
+  searchUsers(query: string): Promise<Omit<User, 'password'>[]>;
 }

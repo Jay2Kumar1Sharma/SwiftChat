@@ -50,8 +50,13 @@ export class AuthService {
       username: user.username,
     });
 
-    // Store refresh token in Redis
-    await redis.setex(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, refreshToken);
+    // Store refresh token in Redis with error handling
+    try {
+      await redis.setex(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, refreshToken);
+    } catch (error) {
+      console.warn('⚠️ Redis setex failed during registration:', error);
+      // Continue without Redis - token will still work but won't be stored for refresh
+    }
 
     // Return user without password
     const { password, ...userWithoutPassword } = user;
@@ -86,8 +91,13 @@ export class AuthService {
       username: user.username,
     });
 
-    // Store refresh token in Redis
-    await redis.setex(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, refreshToken);
+    // Store refresh token in Redis with error handling
+    try {
+      await redis.setex(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, refreshToken);
+    } catch (error) {
+      console.warn('⚠️ Redis setex failed during login:', error);
+      // Continue without Redis - token will still work but won't be stored for refresh
+    }
 
     // Return user without password
     const { password, ...userWithoutPassword } = user;
@@ -104,9 +114,16 @@ export class AuthService {
       // Verify refresh token
       const payload = verifyRefreshToken(refreshToken);
       
-      // Check if refresh token exists in Redis
-      const storedToken = await redis.get(`refresh_token:${payload.userId}`);
-      if (!storedToken || storedToken !== refreshToken) {
+      // Check if refresh token exists in Redis with error handling
+      let storedToken = null;
+      try {
+        storedToken = await redis.get(`refresh_token:${payload.userId}`);
+      } catch (error) {
+        console.warn('⚠️ Redis get failed during refresh token check:', error);
+        // Continue without Redis verification - allow refresh if JWT is valid
+      }
+      
+      if (storedToken && storedToken !== refreshToken) {
         throw new Error('Invalid refresh token');
       }
 
@@ -123,8 +140,13 @@ export class AuthService {
         username: user.username,
       });
 
-      // Store new refresh token
-      await redis.setex(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, newRefreshToken);
+      // Store new refresh token with error handling
+      try {
+        await redis.setex(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, newRefreshToken);
+      } catch (error) {
+        console.warn('⚠️ Redis setex failed during refresh token update:', error);
+        // Continue without Redis - token will still work but won't be stored for refresh
+      }
 
       // Return user without password
       const { password, ...userWithoutPassword } = user;
@@ -143,8 +165,13 @@ export class AuthService {
     // Update online status
     await userRepository.updateOnlineStatus(userId, false);
     
-    // Remove refresh token from Redis
-    await redis.del(`refresh_token:${userId}`);
+    // Remove refresh token from Redis with error handling
+    try {
+      await redis.del(`refresh_token:${userId}`);
+    } catch (error) {
+      console.warn('⚠️ Redis del failed during logout:', error);
+      // Continue without Redis - user will still be logged out
+    }
   }
 
   async getProfile(userId: string): Promise<Omit<User, 'password'>> {

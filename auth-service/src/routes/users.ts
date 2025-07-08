@@ -76,4 +76,66 @@ router.patch('/:userId/status', authMiddleware, async (req: Request, res: Respon
   }
 });
 
+// Search users (protected)
+router.get('/search', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || typeof q !== 'string') {
+      res.status(400).json({
+        error: 'Search query is required',
+      });
+      return;
+    }
+
+    const users = await userRepository.searchUsers(q);
+
+    res.json({
+      message: 'Users found',
+      data: users,
+    });
+  } catch (error: any) {
+    console.error('Search users error:', error);
+    res.status(500).json({
+      error: error.message || 'Failed to search users',
+    });
+  }
+});
+
+// Get user by ID (protected)
+router.get('/:userId', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      res.status(400).json({
+        error: 'User ID is required',
+      });
+      return;
+    }
+
+    const user = await userRepository.findById(userId);
+
+    if (!user) {
+      res.status(404).json({
+        error: 'User not found',
+      });
+      return;
+    }
+
+    // Remove password from response
+    const { password, ...userWithoutPassword } = user;
+
+    res.json({
+      message: 'User retrieved successfully',
+      data: userWithoutPassword,
+    });
+  } catch (error: any) {
+    console.error('Get user error:', error);
+    res.status(500).json({
+      error: error.message || 'Failed to retrieve user',
+    });
+  }
+});
+
 export { router as userRoutes };

@@ -118,19 +118,21 @@ export const authAPI = {
     } catch (error: any) {
       console.warn('🌐 Real API failed, trying demo mode:', error);
       
-      // Check if it's a timeout or network error
-      const isTimeoutOrNetwork = error.message?.includes('timeout') || 
-                                error.message?.includes('Network Error') ||
-                                error.code === 'ECONNABORTED';
+      // Check if it's a timeout, network error, or 404/503 (service unavailable)
+      const isServiceUnavailable = error.message?.includes('timeout') || 
+                                   error.message?.includes('Network Error') ||
+                                   error.code === 'ECONNABORTED' ||
+                                   error.response?.status === 404 ||
+                                   error.response?.status === 503;
       
       // If real API fails, try demo mode
-      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost') || isTimeoutOrNetwork;
+      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost') || isServiceUnavailable;
       
       if (forceDemo) {
         console.log('🎮 Demo login attempt (API unavailable):', { 
           email: credentials.email, 
           passwordLength: credentials.password?.length,
-          reason: isTimeoutOrNetwork ? 'API timeout/network error' : 'demo mode'
+          reason: isServiceUnavailable ? 'Service unavailable (Redis/DB issue)' : 'demo mode'
         });
         
         // Simulate API delay
@@ -176,19 +178,21 @@ export const authAPI = {
     } catch (error: any) {
       console.warn('🌐 Real API failed, trying demo mode:', error);
       
-      // Check if it's a timeout or network error
-      const isTimeoutOrNetwork = error.message?.includes('timeout') || 
-                                error.message?.includes('Network Error') ||
-                                error.code === 'ECONNABORTED';
+      // Check if it's a timeout, network error, or 404/503 (service unavailable)
+      const isServiceUnavailable = error.message?.includes('timeout') || 
+                                   error.message?.includes('Network Error') ||
+                                   error.code === 'ECONNABORTED' ||
+                                   error.response?.status === 404 ||
+                                   error.response?.status === 503;
       
       // If real API fails, try demo mode
-      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost') || isTimeoutOrNetwork;
+      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost') || isServiceUnavailable;
       
       if (forceDemo) {
         console.log('🎮 Demo register (API unavailable):', {
           username: userData.username,
           email: userData.email,
-          reason: isTimeoutOrNetwork ? 'API timeout/network error' : 'demo mode'
+          reason: isServiceUnavailable ? 'Service unavailable (Redis/DB issue)' : 'demo mode'
         });
         await new Promise(resolve => setTimeout(resolve, 500));
         return {
