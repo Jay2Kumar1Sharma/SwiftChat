@@ -47,7 +47,7 @@ class APIClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      timeout: 10000,
+      timeout: 30000, // Increased to 30 seconds for production deployment
       headers: {
         'Content-Type': 'application/json',
       },
@@ -115,14 +115,23 @@ export const authAPI = {
     try {
       console.log('🌐 Attempting real API login...');
       return await apiClient.post('/api/auth/login', credentials);
-    } catch (error) {
+    } catch (error: any) {
       console.warn('🌐 Real API failed, trying demo mode:', error);
       
+      // Check if it's a timeout or network error
+      const isTimeoutOrNetwork = error.message?.includes('timeout') || 
+                                error.message?.includes('Network Error') ||
+                                error.code === 'ECONNABORTED';
+      
       // If real API fails, try demo mode
-      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost');
+      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost') || isTimeoutOrNetwork;
       
       if (forceDemo) {
-        console.log('🎮 Demo login attempt:', { email: credentials.email, passwordLength: credentials.password?.length });
+        console.log('🎮 Demo login attempt (API unavailable):', { 
+          email: credentials.email, 
+          passwordLength: credentials.password?.length,
+          reason: isTimeoutOrNetwork ? 'API timeout/network error' : 'demo mode'
+        });
         
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 800));
@@ -150,7 +159,7 @@ export const authAPI = {
             refreshToken: `demo-refresh-token-${demoUser.id}`,
           };
         } else {
-          throw new Error('Invalid email or password. Try: demo@example.com / demo123');
+          throw new Error('Invalid credentials. Demo users: demo@example.com/demo123, john@example.com/password123');
         }
       } else {
         // If not in demo mode and real API failed, throw the original error
@@ -164,14 +173,23 @@ export const authAPI = {
     try {
       console.log('🌐 Attempting real API register...');
       return await apiClient.post('/api/auth/register', userData);
-    } catch (error) {
+    } catch (error: any) {
       console.warn('🌐 Real API failed, trying demo mode:', error);
       
+      // Check if it's a timeout or network error
+      const isTimeoutOrNetwork = error.message?.includes('timeout') || 
+                                error.message?.includes('Network Error') ||
+                                error.code === 'ECONNABORTED';
+      
       // If real API fails, try demo mode
-      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost');
+      const forceDemo = DEMO_MODE || API_BASE_URL.includes('localhost') || isTimeoutOrNetwork;
       
       if (forceDemo) {
-        console.log('🎮 Demo register:', userData);
+        console.log('🎮 Demo register (API unavailable):', {
+          username: userData.username,
+          email: userData.email,
+          reason: isTimeoutOrNetwork ? 'API timeout/network error' : 'demo mode'
+        });
         await new Promise(resolve => setTimeout(resolve, 500));
         return {
           ...DEMO_AUTH_RESPONSE,
