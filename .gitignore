@@ -228,13 +228,17 @@ deployment/
 pnpm-lock.yaml
 
 # ===============================================
-# Documentation & Scripts (Exclude All)
+# Documentation & Scripts (Exclude Most)
 # ===============================================
-# Exclude ALL markdown files
+# Exclude all markdown documentation files
 *.md
 
-# Exclude ALL batch files  
+# Exclude all batch files
 *.bat
+
+# BUT INCLUDE only essential files
+!start-all.bat
+!README.md
 
 # ===============================================
 # Miscellaneous
