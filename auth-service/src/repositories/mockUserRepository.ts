@@ -115,6 +115,24 @@ class MockUserRepository implements IUserRepository {
       return userWithoutPassword;
     });
   }
+
+  async searchUsers(query: string): Promise<Omit<User, 'password'>[]> {
+    if (!query || query.trim().length === 0) {
+      return [];
+    }
+
+    const lowercaseQuery = query.toLowerCase().trim();
+    
+    return Array.from(this.users.values())
+      .filter(user => 
+        user.username.toLowerCase().includes(lowercaseQuery) ||
+        user.email.toLowerCase().includes(lowercaseQuery)
+      )
+      .map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+  }
 }
 
 export const mockUserRepository = new MockUserRepository();
