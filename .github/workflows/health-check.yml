@@ -1,0 +1,36 @@
+name: Health Check
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Check project structure
+      run: |
+        echo "Checking project structure..."
+        ls -la
+        echo "Services found:"
+        ls -d */ | grep -E "(auth-service|api-gateway|websocket-gateway|chat-service|notification-service|frontend)"
+    
+    - name: Verify package.json files
+      run: |
+        echo "Verifying package.json files..."
+        for service in auth-service api-gateway websocket-gateway chat-service notification-service frontend; do
+          if [ -f "$service/package.json" ]; then
+            echo "✅ $service/package.json exists"
+          else
+            echo "❌ $service/package.json missing"
+          fi
+        done
