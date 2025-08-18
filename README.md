@@ -17,7 +17,7 @@ This will:
 - ✅ Install all dependencies automatically
 - ✅ Start all services in separate windows  
 - ✅ Open the chat application in your browser
-- ✅ Show health status of all services
+- ✅ Show health status of all service
 
 ### 🎮 **Demo Mode Features**
 - **No Database Required**: Runs with mock data for quick testing
