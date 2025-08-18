@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     
     strategy:
+      fail-fast: false
       matrix:
         service: [auth-service, api-gateway, websocket-gateway, chat-service, notification-service, frontend]
     
@@ -21,20 +22,44 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: ${{ matrix.service }}/package-lock.json
+    
+    - name: Check service exists
+      run: |
+        if [ ! -d "${{ matrix.service }}" ]; then
+          echo "Service ${{ matrix.service }} does not exist"
+          exit 1
+        fi
+        if [ ! -f "${{ matrix.service }}/package.json" ]; then
+          echo "No package.json found in ${{ matrix.service }}"
+          exit 1
+        fi
     
     - name: Install dependencies
       run: |
         cd ${{ matrix.service }}
-        npm ci
+        if [ -f "package-lock.json" ]; then
+          echo "Using npm ci..."
+          npm ci
+        else
+          echo "Using npm install..."
+          npm install
+        fi
     
     - name: Build
       run: |
         cd ${{ matrix.service }}
-        npm run build
+        if npm run build; then
+          echo "✅ Build successful for ${{ matrix.service }}"
+        else
+          echo "❌ Build failed for ${{ matrix.service }}"
+          exit 1
+        fi
     
     - name: Test
       run: |
         cd ${{ matrix.service }}
-        npm test || echo "No tests configured for ${{ matrix.service }}"
+        if npm test; then
+          echo "✅ Tests passed for ${{ matrix.service }}"
+        else
+          echo "⚠️ Tests failed or not configured for ${{ matrix.service }}"
+        fi
