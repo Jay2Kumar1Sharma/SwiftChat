@@ -315,3 +315,7 @@ metrics/
 
 # Error tracking
 sentry.properties
+
+# Project description files
+GITHUB-SHORT-DESCRIPTION.txt
+LINKEDIN-PROJECT-DESCRIPTION.txt
